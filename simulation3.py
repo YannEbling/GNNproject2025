@@ -1,51 +1,47 @@
-from scipy.integrate import odeint
+from scipy.integrate import solve_ivp
 import numpy as np
 import matplotlib.pyplot as plt
 
-import auxiliary_functions as aux
-import parameters as para
 
-
-def polar_eom(variables, t):
+def Newton_eom(t, variables):
+    """
+    Newtonian equation of motion in first order representation (in astronomical units, AE and year).
+    :param variables: tuple of form (x, vx, y, vy)
+    :param t: time parameter, gravitational law is independent of t. Used as integration variable by ODE solver
+    :return: derivative of input variables according to equation of motion
     """
 
-    :param variables:
-    :param t:
-    :return:
-    """
-    r, rho, theta, ceta = variables
 
-    dr_dt = rho
-    drho_dt = r*ceta**2 + para.G * para.M/r**2
-    dtheta_dt = ceta
-    dceta_dt = -2*rho*ceta/r
+    G_M = 4 * np.pi**2
 
-    return [dr_dt, drho_dt, dtheta_dt, dceta_dt]
+    x, vx, y, vy = variables
+
+    r = np.sqrt(x**2 + y**2)
+    ax = - G_M * x / r**3
+    ay = - G_M * y / r**3
+
+    return [vx, ax, vy, ay]
 
 
 def solve_equation_of_motion(initial_conditions, t):
     """
-
-    :param initial_conditions:
-    :param t:
-    :return:
+    Function that calls the ODE solver and evaluates the solution at the points contained in t.
+    :param initial_conditions: Initial condition for which the initial value problem shall be solved.
+    :param t: t values where the solution shall be recorded. Evaluation points
+    :return: array of shape (4, len(t)), containing the recorded solutions for x, vx, y and vy
     """
 
-    sol = odeint(polar_eom, initial_conditions, t)
-    return sol
+    T = np.max(t)
+
+    sol = solve_ivp(Newton_eom, [0, T], initial_conditions, method="Radau", t_eval=t, dense_output=True)
+
+    sol = sol.y
+
+    return sol[0, :], sol[1, :], sol[2, :], sol[3, :]
 
 
 def simulate_and_visualize(initial_conditions, t):
-    sol = solve_equation_of_motion(initial_conditions, t)
-
-    r_vals = sol[:, 0]
-    rho_vals = sol[:, 1]
-    theta_vals = sol[:, 2]
-    ceta_vals = sol[:, 3]
-
-    # transform the polar coordinates back to 2d euclidean space for plotting
-    x_vals = r_vals * np.cos(theta_vals)
-    y_vals = r_vals * np.sin(theta_vals)
+    x_vals, vx_vals, y_vals, vy_vals = solve_equation_of_motion(initial_conditions, t)
 
     plt.figure(figsize=(6, 6))
     plt.plot(x_vals, y_vals, color="blue", marker="+", ls=":", label="Projected trajectory")
@@ -63,9 +59,10 @@ def simulate_and_visualize(initial_conditions, t):
 
 
 def test():
-    initial_conditions = [para.L, 0, 0, para.V_MEAN]
+    initial_conditions = [1, 0, 0, 2*np.pi]
 
-    t = np.linspace(0, 3600*24*365, 500)
+    T = 10
+    t = np.linspace(0, T, 500)
 
     x, y = simulate_and_visualize(initial_conditions, t)
 
