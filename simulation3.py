@@ -33,6 +33,9 @@ def solve_equation_of_motion(initial_conditions, t):
 
     T = np.max(t)
 
+    if T == 0 and np.shape(t)[0] == 1:
+        return initial_conditions
+
     sol = solve_ivp(Newton_eom, [0, T], initial_conditions, method="Radau", t_eval=t, dense_output=True)
 
     sol = sol.y
@@ -107,7 +110,8 @@ def sample_random_incon(r_mean, r_std, v_mean, v_std, angular_velocity_threshold
 
 def create_dataset(n_samples, t=None,
                    r_mean=1, r_std=0.1, v_mean=2*np.pi, v_std=0.5, angular_velocity_threshold=0.2,
-                   G_M=4*np.pi**2, silent_updates=True):
+                   G_M=4*np.pi**2, silent_updates=True,
+                   random_t=False):
 
     if not silent_updates:
         print("Starting dataset creation.")
@@ -124,6 +128,8 @@ def create_dataset(n_samples, t=None,
     data_set = np.zeros(shape=(n_samples, n_timepoints, 5))
 
     for j in range(n_samples):
+        if t is None and random_t:
+            t = np.random.uniform(low=0, high=T, size=200, dtype=np.float32).sort()
         if not silent_updates:
             print("Creating instance ", j)
         initial_condition = sample_random_incon(r_mean, r_std, v_mean, v_std, angular_velocity_threshold, silent_updates)

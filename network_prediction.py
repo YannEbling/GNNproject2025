@@ -31,7 +31,7 @@ def visualize_prediction(x_tensor, lr, hs, nl, ws, model_name, k=1):
     plt.close()
 
 
-def model_predictor(hyperparameters=None, conservation_mode="1"):
+def model_predictor(hyperparameters=None, conservation_mode="1", model_name=None):
     if hyperparameters is None:
         hyperparameters = {"epochs": 101,
                                "lr": 0.01,
@@ -48,11 +48,12 @@ def model_predictor(hyperparameters=None, conservation_mode="1"):
     num_layers = hyperparameters["num_layers"]
     learning_rate = hyperparameters["lr"]
 
-    model_name = "xvpredictor_" + str(hyperparameters["epochs"]) + "ep_" + str(hyperparameters["lr"]) + "lr_" + \
-                 str(hyperparameters["pinn_parameter"]) + "pp_" + str(hyperparameters["window_size"]) + "ws_" + \
-                 str(hyperparameters["hidden_size"]) + "hs_" + str(hyperparameters["num_layers"]) + "nl_" + \
-                 str(hyperparameters["train_set_size"]) + "ts_" + str(hyperparameters["validation_set_size"]) + "vs"+\
-                 str(conservation_mode)+"cm"
+    if model_name is None:
+        model_name = "xvpredictor_" + str(hyperparameters["epochs"]) + "ep_" + str(hyperparameters["lr"]) + "lr_" + \
+                     str(hyperparameters["pinn_parameter"]) + "pp_" + str(hyperparameters["window_size"]) + "ws_" + \
+                     str(hyperparameters["hidden_size"]) + "hs_" + str(hyperparameters["num_layers"]) + "nl_" + \
+                     str(hyperparameters["train_set_size"]) + "ts_" + str(hyperparameters["validation_set_size"]) + "vs_"+\
+                     str(conservation_mode)+"cm"
 
     model_name = model_name.replace('.', '_')
     model_name = model_name.replace(',', '_')
@@ -64,7 +65,7 @@ def model_predictor(hyperparameters=None, conservation_mode="1"):
     for k in range(10):
         T = 1
 
-        initial_data = create_dataset(1, t=np.linspace(0, T/20, 10), r_mean=1, r_std=0.2, v_mean=2*np.pi, v_std=0.5,
+        initial_data = create_dataset(1, t=np.linspace(0, T/20, model.window_size), r_mean=1, r_std=0., v_mean=2*np.pi, v_std=0.,
                                       angular_velocity_threshold=0.4)[0].ravel()
 
         predicted_x = model.predict_trajectory(timepoints=np.linspace(0, T, num=500), x_in=initial_data)

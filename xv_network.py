@@ -97,6 +97,9 @@ def angular_momentum_loss(x_pred, h):
 
     gamma = torch.acos(torch.dot(x, v) / (x_norm * v_norm))
 
+    if gamma.isnan():
+        print("ERROR: NAN VALUED GAMMA, X: ", x, ", \t V ", v)
+
     return torch.abs(x_norm * v_norm * torch.sin(gamma) - h)
 
 
@@ -144,6 +147,17 @@ def train_xv_predictor(training_set, validation_set, model, hyperparameters, con
             orbit_data = training_set[i, :, :]
             orbit_loss = 0
 
+            x_0 = orbit_data[0, 1:3]
+            v_0 = orbit_data[0, 3:]
+
+            x_norm = torch.norm(v_0)
+            v_norm = torch.norm(x_0)
+
+            gamma = torch.acos(torch.dot(x_0, v_0) / (x_norm * v_norm))
+
+            h = x_norm * v_norm * torch.sin(gamma)
+            E = v_norm ** 2 / 2 - G_M / x_norm
+
             for k in range(window_size+1, T):
                 input_values = orbit_data[k-window_size-1:k-1, :]
 
@@ -167,29 +181,11 @@ def train_xv_predictor(training_set, validation_set, model, hyperparameters, con
 
                 for letter in conservation_mode:
                     if letter == "1":
-                        v_k_minus1 = orbit_data[k-1, 3:]
-                        x_k_minus1 = orbit_data[k-1, 1:3]
-
-                        v_norm = torch.norm(v_k_minus1, p=2)
-                        x_norm = torch.norm(x_k_minus1, p=2)
-
-                        E = v_norm**2 / 2 - G_M / x_norm
-
                         E_loss = energy_loss(x_k_hat, E=E, G_M=G_M)
 
                         pinn_loss += E_loss
 
                     if letter == "2":
-                        v_k_minus1 = orbit_data[k-1, 3:]
-                        x_k_minus1 = orbit_data[k-1, 1:3]
-
-                        v_norm = torch.norm(v_k_minus1, p=2)
-                        x_norm = torch.norm(x_k_minus1, p=2)
-
-                        gamma = torch.acos(torch.dot(x_k_minus1, v_k_minus1) / (x_norm * v_norm))
-
-                        h = x_norm * v_norm * torch.sin(gamma)
-
                         h_loss = angular_momentum_loss(x_k_hat, h=h)
 
                         pinn_loss += h_loss
@@ -204,6 +200,7 @@ def train_xv_predictor(training_set, validation_set, model, hyperparameters, con
 
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 optimizer.step()
+                optimizer.zero_grad()
 
             epoch_loss.append(orbit_loss)
         train_loss.append(epoch_loss)
@@ -244,27 +241,9 @@ def train_xv_predictor(training_set, validation_set, model, hyperparameters, con
                         for letter in conservation_mode:
 
                             if letter == "1":
-                                v_k_minus1 = orbit_data[k - 1, 3:]
-                                x_k_minus1 = orbit_data[k - 1, 1:3]
-
-                                v_norm = torch.norm(v_k_minus1, p=2)
-                                x_norm = torch.norm(x_k_minus1, p=2)
-
-                                E = v_norm ** 2 / 2 - G_M / x_norm
-
                                 pinn_loss += energy_loss(x_k_hat, E=E, G_M=G_M)
 
                             if letter == "2":
-                                v_k_minus1 = orbit_data[k - 1, 3:]
-                                x_k_minus1 = orbit_data[k - 1, 1:3]
-
-                                v_norm = torch.norm(v_k_minus1, p=2)
-                                x_norm = torch.norm(x_k_minus1, p=2)
-
-                                gamma = torch.acos(torch.dot(x_k_minus1, v_k_minus1) / (x_norm * v_norm))
-
-                                h = x_norm * v_norm * torch.sin(gamma)
-
                                 pinn_loss += angular_momentum_loss(x_k_hat, h=h)
 
                         loss = mse_loss(x_k_hat, x_k) + pinn_parameter * pinn_loss
