@@ -5,7 +5,11 @@ planetary motion in a two-body system" by Yann Ebling for the course Generative 
 Science, submitted on march 31st 2025. No changes will be made after the deadline of 16:00.
 
 All that is found in the report (findings, plots, predictions etc.) can be found in this repository,
-along with a lot of older code, which was not used for the final report. The important files are
+along with a lot of older code, which was not used for the final report. The branch "Parallelization"
+should be identical to main. It contained the most recent state of the project and was merged to main
+on 31st of march.
+
+The important files are in this repository are
 
 1. simulation3.py, which is used to create the datasets by solving the equation of motion
 2. xv_network.py, which contains the model architecture and the training method
