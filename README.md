@@ -30,18 +30,18 @@ relevant hyperparameters. The number prior to the keyword indicates the numerica
 
 The hyperparameter keywords are:
 
-ep - number of epochs, default value 201
-lr - learning rate, default value 0.001
-pp - PINN-parameter, default value 0.001
-ws - window size, only valid option is 1, other window sizes will cause crashes
-hs - hidden size, default value 32
-nl - number of layers, default value 5
-ts - training set size, default value 1280
-vs - validation set size, default value 512
-cm - "conservation mode", used to distinguish between whether energy conservation (cm="1"), 
+- ep - number of epochs, default value 201
+- lr - learning rate, default value 0.001
+- pp - PINN-parameter, default value 0.001
+- ws - window size, only valid option is 1, other window sizes will cause crashes
+- hs - hidden size, default value 32
+- nl - number of layers, default value 5
+- ts - training set size, default value 1280
+- vs - validation set size, default value 512
+- cm - "conservation mode", used to distinguish between whether energy conservation (cm="1"), 
      conservation of angular momentum ("2") or both ("12") are included in the loss. Only
      energy conservation is used, so conservation mode "2" or empty "" are valid options
 
 This leads to the filename 
 xvpredictor_hyperparameters_assessment_201ep_0_001lr_0_001pp_1ws_32hs_5nl_1280ts_512vs_1cm_NONOISE.pth.tar
-for the model, which can be found in the model directory.
+for the model, which can be found in the model/hyperparameter_assessment/ directory.
