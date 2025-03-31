@@ -117,7 +117,7 @@ def create_dataset(n_samples, t=None,
         print("Starting dataset creation.")
 
     if t is None:
-        N = 1
+        N = 3
         T = np.sqrt(4*np.pi**2 / G_M * r_mean**3) * N  # N complete revolutions of an object in a circular orbit,
                                                        # according to Kepler 3
 
@@ -169,6 +169,8 @@ def visualize_dataset(data_set):
         plt.legend()
         plt.grid(alpha=0.6)
 
+
+        plt.savefig("./plots/simulation/simulated_orbit"+str(np.random.randint(1, 1000))+ str(k)+".png")
         plt.show()
         plt.close()
 

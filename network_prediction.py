@@ -7,7 +7,7 @@ from simulation3 import sample_random_incon, create_dataset
 import os
 
 
-def visualize_prediction(x_tensor, lr, hs, nl, ws, model_name, k=1):
+def visualize_prediction(x_tensor, lr, hs, nl, ws, model_name, k=1, pre_path=""):
     x = x_tensor.detach().numpy()
     x_vals = x[:, 0]
     y_vals = x[:, 1]
@@ -21,17 +21,17 @@ def visualize_prediction(x_tensor, lr, hs, nl, ws, model_name, k=1):
     ax.set_xlabel("x")
     ax.set_ylabel("y")
 
-    path = "./plots/"+model_name
+    path = "./plots/"+pre_path+"/"+model_name
 
     if not os.path.isdir(path):
         os.mkdir(path=path)
 
     plt.savefig(path+"/prediction_"+str(k)+".png")
-    plt.show()
+    #plt.show()
     plt.close()
 
 
-def model_predictor(hyperparameters=None, conservation_mode="1", model_name=None):
+def model_predictor(hyperparameters=None, conservation_mode="1", model_name=None, pre_path=""):
     if hyperparameters is None:
         hyperparameters = {"epochs": 101,
                                "lr": 0.01,
@@ -59,13 +59,13 @@ def model_predictor(hyperparameters=None, conservation_mode="1", model_name=None
     model_name = model_name.replace(',', '_')
 
     model = net.XVPredictor(window_size=window_size, hidden_size=hidden_size, num_layers=num_layers)
-    model.load_state_dict(torch.load("./models/"+model_name+".pth.tar", weights_only=False)["model"])
+    model.load_state_dict(torch.load("./models/"+pre_path+"/"+model_name+".pth.tar", weights_only=False)["model"])
     model.eval()
 
     for k in range(10):
         T = 1
 
-        initial_data = create_dataset(1, t=np.linspace(0, T/20, model.window_size), r_mean=1, r_std=0., v_mean=2*np.pi, v_std=0.,
+        initial_data = create_dataset(1, t=np.linspace(0, T/20, model.window_size), r_mean=1, r_std=0., v_mean=2*torch.pi, v_std=0.,
                                       angular_velocity_threshold=0.4)[0].ravel()
 
         predicted_x = model.predict_trajectory(timepoints=np.linspace(0, T, num=500), x_in=initial_data)
