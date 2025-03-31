@@ -9,16 +9,17 @@ import os
 
 def save_checkpoint(state, filename="/models/new_model.pth.tar"):
     print("=> Saving checkpoint!")
+    print("=> Saving at path")
     torch.save(state, filename)
 
 
-def train_new_model(hyperparameters=None, conservation_mode="1", model_name=None, random_t=False):
+def train_new_model(hyperparameters=None, conservation_mode="1", model_name=None, random_t=False, pre_path=""):
     if hyperparameters is None:
         hyperparameters = {"epochs": 5,
                            "lr": 0.01,
-                           "batch_size": 1,
+                           "batch_size": 3,
                            "pinn_parameter": 0.0,
-                           "window_size": 10,
+                           "window_size": 1,
                            "hidden_size": 32,
                            "num_layers": 5,
                            "train_set_size": 300,
@@ -76,7 +77,7 @@ def train_new_model(hyperparameters=None, conservation_mode="1", model_name=None
     model_name = model_name.replace('.', '_')
     model_name = model_name.replace(',', '_')
 
-    save_checkpoint(model_dict, "./models/" + model_name + ".pth.tar")
+    save_checkpoint(model_dict, "./models/" + pre_path + "/" + model_name + ".pth.tar")
     print("Saved a model!")
 
     plt.figure(figsize=(8, 6))
@@ -90,19 +91,19 @@ def train_new_model(hyperparameters=None, conservation_mode="1", model_name=None
     plt.grid(alpha=0.6)
     plt.legend()
 
-    plt.savefig("./plots/"+model_name+"_loss_evolution.png")
+    plt.savefig("./plots/"+ pre_path + "/" + model_name+"_loss_evolution.png")
 
-    plt.show()
+    #plt.show()
     plt.close()
 
 
-def train_existing_model(hyperparameters=None, conservation_mode="1", model_name=None, random_t=False):
+def train_existing_model(hyperparameters=None, conservation_mode="1", model_name=None, random_t=False, pre_path=""):
     if hyperparameters is None:
         hyperparameters = {"epochs": 5,
                            "lr": 0.01,
                            "batch_size": 1,
                            "pinn_parameter": 0.0,
-                           "window_size": 10,
+                           "window_size": 1,
                            "hidden_size": 32,
                            "num_layers": 5,
                            "train_set_size": 300,
@@ -115,13 +116,13 @@ def train_existing_model(hyperparameters=None, conservation_mode="1", model_name
     hidden_size = hyperparameters["hidden_size"]
     num_layers = hyperparameters["num_layers"]
 
-    if not os.path.isfile("./models/" + model_name + ".pth.tar"):
+    if not os.path.isfile("./models/" + pre_path + "/" + model_name + ".pth.tar"):
         print("No model with the specified name found in the ./models/ directory.")
         return -1
     else:
         model = net.XVPredictor(window_size=window_size, hidden_size=hidden_size, num_layers=num_layers)
-        model.load_state_dict(torch.load("./models/" + model_name + ".pth.tar", weights_only=False)["model"])
-        old_epochs = torch.load("./models/" + model_name + ".pth.tar", weights_only=False)["training_epochs"]
+        model.load_state_dict(torch.load("./models/" + pre_path + "/" + model_name + ".pth.tar", weights_only=False)["model"])
+        old_epochs = torch.load("./models/" + pre_path + "/" + model_name + ".pth.tar", weights_only=False)["training_epochs"]
 
     train_set = torch.tensor(sim.create_dataset(train_set_size,
                                                 r_mean=1, r_std=0, v_mean=2*np.pi, v_std=0,
@@ -155,7 +156,7 @@ def train_existing_model(hyperparameters=None, conservation_mode="1", model_name
                   "training_epochs": num_epochs+old_epochs,
                   "training_loss": train_loss}
 
-    save_checkpoint(model_dict, "./models/" + model_name + ".pth.tar")
+    save_checkpoint(model_dict, "./models/" + pre_path + "/" + model_name + ".pth.tar")
     print("Saved a model!")
 
     plt.figure(figsize=(8, 6))
@@ -169,9 +170,9 @@ def train_existing_model(hyperparameters=None, conservation_mode="1", model_name
     plt.grid(alpha=0.6)
     plt.legend()
 
-    plt.savefig("./plots/" + model_name + "_loss_evolution.png")
+    plt.savefig("./plots/" + pre_path + "/" + model_name + "_loss_evolution.png")
 
-    plt.show()
+    #plt.show()
     plt.close()
 
 
